@@ -64,8 +64,8 @@ namespace pentago
         // Rotations details
         public static readonly Rotation[] Rotations =
         {
-            new Rotation(true, 0), new Rotation(false, 0), new Rotation(true, 1), new Rotation(false, 1),
-            new Rotation(true, 2), new Rotation(false, 2), new Rotation(true, 3), new Rotation(false, 3)
+            new Rotation(true, 0), new Rotation(false, 1), new Rotation(true, 1), new Rotation(false, 3),
+            new Rotation(true, 3), new Rotation(false, 2), new Rotation(true, 2), new Rotation(false, 0)
         };
         
         // The status of the cell (empty, player 1, player 2)
@@ -84,5 +84,8 @@ namespace pentago
             Draw,
             Nothing
         }
+        
+        // Start the rotation of the subgrid
+        public static readonly int[] StartRotation = { 0, 3, 18, 21 };
     }
 }
