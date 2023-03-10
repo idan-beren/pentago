@@ -68,6 +68,7 @@ namespace pentago
                 circles[i].TabIndex = i;
                 circles[i].TabStop = false;
                 circles[i].BackColor = Color.FromArgb(139, 0, 0);
+                circles[i].Click += new System.EventHandler(CircleClicked);
 
                 this.Controls.Add(circles[i]);
                 ((System.ComponentModel.ISupportInitialize)(circles[i])).EndInit();
@@ -94,6 +95,7 @@ namespace pentago
                 arrows[i].BackColor = Color.Transparent;
                 int flips = ArrowsRotations[i];
                 arrows[i].Image.RotateFlip((RotateFlipType)flips);
+                arrows[i].Click += new System.EventHandler(ArrowClicked);
 
                 this.Controls.Add(arrows[i]);
                 ((System.ComponentModel.ISupportInitialize)(arrows[i])).EndInit();

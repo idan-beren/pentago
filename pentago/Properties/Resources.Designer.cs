@@ -60,11 +60,21 @@ namespace pentago.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap arrow {
             get {
                 object obj = ResourceManager.GetObject("arrow", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap black_circle {
+            get {
+                object obj = ResourceManager.GetObject("black_circle", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -85,6 +95,16 @@ namespace pentago.Properties {
         internal static System.Drawing.Bitmap subgrid {
             get {
                 object obj = ResourceManager.GetObject("subgrid", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap white_circle {
+            get {
+                object obj = ResourceManager.GetObject("white_circle", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

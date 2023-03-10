@@ -60,5 +60,29 @@ namespace pentago
         
         // The sizes of the screen
         public static readonly Size ScreenSizes = new Size(800, 800);
+        
+        // Rotations details
+        public static readonly Rotation[] Rotations =
+        {
+            new Rotation(true, 0), new Rotation(false, 0), new Rotation(true, 1), new Rotation(false, 1),
+            new Rotation(true, 2), new Rotation(false, 2), new Rotation(true, 3), new Rotation(false, 3)
+        };
+        
+        // The status of the cell (empty, player 1, player 2)
+        public enum CellStatus
+        {
+            Empty,
+            Player1,
+            Player2
+        }
+        
+        // The status of the game (player 1 wins, player 2 wins, draw, nothing)
+        public enum GameStatus
+        {
+            Player1,
+            Player2,
+            Draw,
+            Nothing
+        }
     }
 }

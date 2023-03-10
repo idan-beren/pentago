@@ -46,7 +46,16 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Board\Cell.cs" />
+        <Compile Include="Board\Grid.cs" />
+        <Compile Include="Board\Game.cs" />
+        <Compile Include="Board\Subgrid.cs" />
         <Compile Include="Configurations.cs" />
+        <Compile Include="Coordinates.cs" />
+        <Compile Include="Players\Computer.cs" />
+        <Compile Include="Players\Human.cs" />
+        <Compile Include="Players\Player.cs" />
+        <Compile Include="Rotation.cs" />
         <Compile Include="Form1.cs">
             <SubType>Form</SubType>
         </Compile>
