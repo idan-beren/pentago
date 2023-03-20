@@ -1,6 +1,3 @@
-using pentago.Board;
-using static pentago.Configurations;
-
 namespace pentago
 {
     public class Rotation

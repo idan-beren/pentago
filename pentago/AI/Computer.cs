@@ -1,6 +1,4 @@
 using System;
-using pentago.Board;
-using static pentago.Configurations;
 
 namespace pentago.AI
 {
@@ -13,19 +11,13 @@ namespace pentago.AI
         public Computer()
         {
             _random = new Random();
+            _cell = -1;
         }
            
         public int RandomCell()
         {
-            _cell = _random.Next(0, 36);
-            if (TakenCircles[_cell] > 0)
-            {
-                while (TakenCircles[_cell] > 0)
-                {
-                    _cell = _random.Next(0, 36);
-                }
-            }
-            TakenCircles[_cell]++;
+            //_cell = _random.Next(0, 36);
+            ++_cell;
             return _cell;
         }
         

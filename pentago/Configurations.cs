@@ -108,8 +108,5 @@ namespace pentago
             new Position(0, 0), new Position(1, 0), new Position(1, 0), new Position(1, 1),
             new Position(1, 1), new Position(0, 1), new Position(0, 1), new Position(0, 0)
         };
-        
-        // Taken circles
-        public static readonly int[] TakenCircles = new int[NumberOfCircles];
     }
 }

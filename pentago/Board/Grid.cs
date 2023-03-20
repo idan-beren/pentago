@@ -1,4 +1,3 @@
-using System.Windows.Forms;
 using static pentago.Configurations;
 namespace pentago.Board
 {
@@ -34,7 +33,6 @@ namespace pentago.Board
                 _subgrids[subgridX, subgridY].Cells[cellX, cellY].Value = value;
                 return true;
             }
-            Application.Exit();
             return false;
         }
 

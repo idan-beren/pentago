@@ -50,7 +50,6 @@ namespace pentago
                 Rotation rotation = Rotations[rotationNumber];
                 Rotate(rotation);
                 _isClicked = false;
-                TakenCircles[_cell]++;
                 _rotation = rotationNumber;
                 GameStatus status = _controller.UpdateGame(_cell, _rotation);
                 if (status != GameStatus.Nothing)
@@ -60,7 +59,6 @@ namespace pentago
                 }
                 _computerCell = _controller.Computer.Cell;
                 _computerRotation = _controller.Computer.Rotation;
-                TakenCircles[_computerCell]++;
                 Rotate(Rotations[_computerRotation]);
                 circles[_computerCell].Enabled = false;
                 circles[_computerCell].Image = Properties.Resources.black_circle;
