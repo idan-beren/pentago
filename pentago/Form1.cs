@@ -2,11 +2,19 @@
 using System.Windows.Forms;
 using static pentago.Configurations;
 using pentago.Board;
+using pentago.Control;
 
 namespace pentago
 {
     public partial class Form1 : Form
     {
+        private int _cell; // cell
+        private int _rotation; // rotation
+        private int _computerCell; // computer cell
+        private int _computerRotation; // computer rotation
+        private bool _isClicked; // is clicked
+        private Controller _controller = new Controller(); // controller
+        
         public Form1()
         {
             SuspendLayout();
@@ -25,6 +33,8 @@ namespace pentago
         // Click on the circle
         private void CircleClicked(object sender, EventArgs e)
         {
+            _isClicked = true;
+            _cell = ((PictureBox)sender).TabIndex;
             PictureBox circle = (PictureBox)sender;
             circle.Enabled = false;
             circle.Image = Properties.Resources.white_circle;
@@ -33,10 +43,28 @@ namespace pentago
         // Click on the arrow
         private void ArrowClicked(object sender, EventArgs e)
         {
-            PictureBox arrow = (PictureBox)sender;
-            int rotationNumber = arrow.TabIndex;
-            Rotation rotation = Rotations[rotationNumber];
-            Rotate(rotation);
+            if (_isClicked)
+            {
+                PictureBox arrow = (PictureBox)sender;
+                int rotationNumber = arrow.TabIndex;
+                Rotation rotation = Rotations[rotationNumber];
+                Rotate(rotation);
+                _isClicked = false;
+                TakenCircles[_cell]++;
+                _rotation = rotationNumber;
+                GameStatus status = _controller.UpdateGame(_cell, _rotation);
+                if (status != GameStatus.Nothing)
+                {
+                    MessageBox.Show(status.ToString());
+                    Application.Exit();
+                }
+                _computerCell = _controller.Computer.Cell;
+                _computerRotation = _controller.Computer.Rotation;
+                TakenCircles[_computerCell]++;
+                Rotate(Rotations[_computerRotation]);
+                circles[_computerCell].Enabled = false;
+                circles[_computerCell].Image = Properties.Resources.black_circle;
+            }
         }
         
         // Rotate the subgrid according to the given rotation

@@ -87,5 +87,29 @@ namespace pentago
         
         // Start the rotation of the subgrid
         public static readonly int[] StartRotation = { 0, 3, 18, 21 };
+        
+        // Circles to Positions
+        public static readonly Position[] CirclesToPositions =
+        {
+            new Position(0, 0), new Position(1, 0), new Position(2, 0), new Position(3, 0), 
+            new Position(4, 0), new Position(5, 0), new Position(0, 1), new Position(1, 1),
+            new Position(2, 1), new Position(3, 1), new Position(4, 1), new Position(5, 1),
+            new Position(0, 2), new Position(1, 2), new Position(2, 2), new Position(3, 2),
+            new Position(4, 2), new Position(5, 2), new Position(0, 3), new Position(1, 3),
+            new Position(2, 3), new Position(3, 3), new Position(4, 3), new Position(5, 3),
+            new Position(0, 4), new Position(1, 4), new Position(2, 4), new Position(3, 4),
+            new Position(4, 4), new Position(5, 4), new Position(0, 5), new Position(1, 5),
+            new Position(2, 5), new Position(3, 5), new Position(4, 5), new Position(5, 5)
+        };
+        
+        // Rotations to Positions
+        public static readonly Position[] RotationsToPositions =
+        {
+            new Position(0, 0), new Position(1, 0), new Position(1, 0), new Position(1, 1),
+            new Position(1, 1), new Position(0, 1), new Position(0, 1), new Position(0, 0)
+        };
+        
+        // Taken circles
+        public static readonly int[] TakenCircles = new int[NumberOfCircles];
     }
 }
