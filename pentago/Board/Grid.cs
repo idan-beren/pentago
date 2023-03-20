@@ -45,18 +45,6 @@ namespace pentago.Board
                 _subgrids[subgridX, subgridY].RotateCounterClockwise();
         }
         
-        // Convert the grid to a 2D array of cells
-        private Cell[,] GridToCells()
-        {
-            Cell[,] cells = new Cell[GridSize * Subgrid.SubgridSize, GridSize * Subgrid.SubgridSize];
-            for (int i = 0; i < GridSize; i++)
-                for (int j = 0; j < GridSize; j++)
-                    for (int k = 0; k < Subgrid.SubgridSize; k++)
-                        for (int l = 0; l < Subgrid.SubgridSize; l++)
-                            cells[i * Subgrid.SubgridSize + k, j * Subgrid.SubgridSize + l] = _subgrids[i, j].Cells[k, l];
-            return cells;
-        }
-        
         // Checks if a player won in a row
         private bool CheckRows(CellStatus player)
         {
