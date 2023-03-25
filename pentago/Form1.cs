@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
 using static pentago.Configurations;
-using pentago.Board;
 using pentago.Control;
 
 namespace pentago
