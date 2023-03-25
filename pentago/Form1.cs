@@ -8,13 +8,14 @@ namespace pentago
 {
     public partial class Form1 : Form
     {
-        private int _cell; // cell
-        private int _rotation; // rotation
+        private int _userCell; // user cell
+        private int _userRotation; // user rotation
         private int _computerCell; // computer cell
         private int _computerRotation; // computer rotation
-        private bool _isClicked; // is clicked
-        private Controller _controller = new Controller(); // controller
+        private bool _isClicked; // is clicked - true if the user clicked on a circle, false otherwise
+        // private readonly Controller _controller = new Controller(); // controller
         
+        // Constructor
         public Form1()
         {
             SuspendLayout();
@@ -34,8 +35,8 @@ namespace pentago
         private void CircleClicked(object sender, EventArgs e)
         {
             _isClicked = true;
-            _cell = ((PictureBox)sender).TabIndex;
             PictureBox circle = (PictureBox)sender;
+            _userCell = circle.TabIndex;
             circle.Enabled = false;
             circle.Image = Properties.Resources.white_circle;
         }
@@ -45,88 +46,76 @@ namespace pentago
         {
             if (_isClicked)
             {
-                PictureBox arrow = (PictureBox)sender;
-                int rotationNumber = arrow.TabIndex;
-                Rotation rotation = Rotations[rotationNumber];
-                Rotate(rotation);
                 _isClicked = false;
-                _rotation = rotationNumber;
-                GameStatus status = _controller.UpdateGame(_cell, _rotation);
-                if (status != GameStatus.Nothing)
-                {
-                    MessageBox.Show(status.ToString());
-                    Application.Exit();
-                }
-                _computerCell = _controller.Computer.Cell;
-                _computerRotation = _controller.Computer.Rotation;
-                Rotate(Rotations[_computerRotation]);
-                circles[_computerCell].Enabled = false;
-                circles[_computerCell].Image = Properties.Resources.black_circle;
+                PictureBox arrow = (PictureBox)sender;
+                _userRotation = arrow.TabIndex;
+                Rotation rotation = Rotations[_userRotation];
+                Rotate(rotation);
             }
         }
         
         // Rotate the subgrid according to the given rotation
         private void Rotate(Rotation rotation)
         {
-            Position[,] positionsMatrix = CreatPositionsMatrix(rotation.SubgridIndex);
-            Position[,] rotatedPositionsMatrix;
             if (rotation.IsClockwise)
-                rotatedPositionsMatrix = RotateClockwisePositionsMatrix(positionsMatrix);
+                RotateClockwise(rotation.SubgridIndex);
             else
-                rotatedPositionsMatrix = RotateCounterClockwisePositionsMatrix(positionsMatrix);
-            UpdateCircles(rotatedPositionsMatrix, rotation.SubgridIndex);
-        }
-
-        // Creat a matrix of positions of the circles in the circles array
-        private Position[,] CreatPositionsMatrix(int subgridIndex)
-        {
-            int x = StartRotation[subgridIndex];
-            Position[,] positionsMatrix = new Position[Subgrid.SubgridSize, Subgrid.SubgridSize];
-            for (int i = 0; i < Subgrid.SubgridSize; i++)
-            {
-                for (int j = 0; j < Subgrid.SubgridSize; j++)
-                {
-                    positionsMatrix[j, i] = new Position(circles[x].Location.X, circles[x].Location.Y);
-                    x++;
-                }
-                x += Subgrid.SubgridSize;
-            }
-            return positionsMatrix;
+                RotateCounterClockwise(rotation.SubgridIndex);
         }
         
-        // Rotate clockwise the positions matrix
-        private Position[,] RotateClockwisePositionsMatrix(Position[,] positionsMatrix)
+        // Rotate clockwise the subgrid
+        private void RotateClockwise(int subgridIndex)
         {
-            Position[,] rotatedPositionsMatrix = new Position[Subgrid.SubgridSize, Subgrid.SubgridSize];
-            for (int i = 0; i < Subgrid.SubgridSize; i++)
-                for (int j = 0; j < Subgrid.SubgridSize; j++)
-                    rotatedPositionsMatrix[i, j] = positionsMatrix[Subgrid.SubgridSize - j - 1, i];
-            return rotatedPositionsMatrix;
+            PictureBox[,] temp = new PictureBox[SubgridSize, SubgridSize];
+            for (int i = 0; i < SubgridSize; i++)
+                for (int j = 0; j < SubgridSize; j++)
+                    temp[i, j] = CloneCircle(circles[subgridIndex][i, j]);
+            for (int i = 0; i < SubgridSize; i++)
+                for (int j = 0; j < SubgridSize; j++)
+                    SwapCircles(circles[subgridIndex][i, j], temp[SubgridSize - j - 1, i]);
         }
         
-        // Rotate counter clockwise the positions matrix
-        private Position[,] RotateCounterClockwisePositionsMatrix(Position[,] positionsMatrix)
+        // Rotate counter-clockwise the subgrid
+        private void RotateCounterClockwise(int subgridIndex)
         {
-            Position[,] rotatedPositionsMatrix = new Position[Subgrid.SubgridSize, Subgrid.SubgridSize];
-            for (int i = 0; i < Subgrid.SubgridSize; i++)
-                for (int j = 0; j < Subgrid.SubgridSize; j++)
-                    rotatedPositionsMatrix[i, j] = positionsMatrix[j, Subgrid.SubgridSize - i - 1];
-            return rotatedPositionsMatrix;
+            PictureBox[,] temp = new PictureBox[SubgridSize, SubgridSize];
+            for (int i = 0; i < SubgridSize; i++)
+                for (int j = 0; j < SubgridSize; j++)
+                    temp[i, j] = CloneCircle(circles[subgridIndex][i, j]);
+            for (int i = 0; i < SubgridSize; i++)
+                for (int j = 0; j < SubgridSize; j++)
+                    SwapCircles(circles[subgridIndex][i, j],  temp[j, SubgridSize - i - 1]);
         }
         
-        // Update the positions of the circles in the circles array according to the positions matrix
-        private void UpdateCircles(Position[,] positionsMatrix, int subgridIndex)
+        // Swap the circles by image and enabled
+        private static void SwapCircles(PictureBox circle1, PictureBox circle2)
         {
-            int x = StartRotation[subgridIndex];
-            for (int i = 0; i < Subgrid.SubgridSize; i++)
-            {
-                for (int j = 0; j < Subgrid.SubgridSize; j++)
-                {
-                    circles[x].Location = new System.Drawing.Point(positionsMatrix[j, i].X, positionsMatrix[j, i].Y);
-                    x++;
-                }
-                x += Subgrid.SubgridSize;
-            }
+            System.Drawing.Image tempImage = circle1.Image;
+            bool tempEnabled = circle1.Enabled;
+            circle1.Image = circle2.Image;
+            circle1.Enabled = circle2.Enabled;
+            circle2.Image = tempImage;
+            circle2.Enabled = tempEnabled;
+        }
+        
+        // Clone the circles
+        private static PictureBox CloneCircle(PictureBox circle)
+        {
+            PictureBox clone = new PictureBox();
+            clone.Image = circle.Image;
+            clone.Enabled = circle.Enabled;
+            return clone;
+        }
+        
+        // Search a circle by its tab index
+        private PictureBox SearchCircle(int tabIndex)
+        {
+            for (int i = 0; i < NumberOfSubgrids; i++)
+                for (int j = 0; j < SubgridSize; j++)
+                    for (int k = 0; k < SubgridSize; k++)
+                        if (circles[i][j, k].TabIndex == tabIndex)
+                            return circles[i][j, k];
+            return null;
         }
     }
 }

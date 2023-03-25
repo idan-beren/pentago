@@ -27,18 +27,19 @@ namespace pentago
         // -------------------------------------------------------------------------------------------------------------
         
         private System.Windows.Forms.PictureBox[] subgrids; // array of the subgrids
+        
         // Initialize the subgrids array and add them to the form
         private void InitializeSubgrids()
         {
             subgrids = new System.Windows.Forms.PictureBox[NumberOfSubgrids];
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < NumberOfSubgrids; i++)
             {
                 subgrids[i] = new System.Windows.Forms.PictureBox();
                 ((System.ComponentModel.ISupportInitialize)(subgrids[i])).BeginInit();
                 
                 subgrids[i].Image = global::pentago.Properties.Resources.subgrid;
                 subgrids[i].Location = new System.Drawing.Point(SubgridsPositions[i].X, SubgridsPositions[i].Y);
-                subgrids[i].Name = "subgrid" + (i + 1).ToString();
+                subgrids[i].Name = "subgrid" + (i).ToString();
                 subgrids[i].Size = new System.Drawing.Size(SubgridsSizes.Width, SubgridsSizes.Height);
                 subgrids[i].SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
                 subgrids[i].TabIndex = i;
@@ -49,45 +50,68 @@ namespace pentago
                 ((System.ComponentModel.ISupportInitialize)(subgrids[i])).EndInit();
             }
         }
+
+        private System.Windows.Forms.PictureBox[,] circles1; // matrix of the circles in the first subgrid
+        private System.Windows.Forms.PictureBox[,] circles2; // matrix of the circles in the second subgrid
+        private System.Windows.Forms.PictureBox[,] circles3; // matrix of the circles in the third subgrid
+        private System.Windows.Forms.PictureBox[,] circles4; // matrix of the circles in the fourth subgrid
+        private System.Windows.Forms.PictureBox[][,] circles; // array of the circles in the subgrids
         
-        private System.Windows.Forms.PictureBox[] circles; // array of the circles
-        // Initialize the circles
+        // Initialize the circles in the subgrids
         private void InitializeCircles()
         {
-            circles = new System.Windows.Forms.PictureBox[NumberOfCircles];
-            for (int i = 0; i < 36; i++)
+            circles1 = new System.Windows.Forms.PictureBox[SubgridSize, SubgridSize];
+            circles2 = new System.Windows.Forms.PictureBox[SubgridSize, SubgridSize];
+            circles3 = new System.Windows.Forms.PictureBox[SubgridSize, SubgridSize];
+            circles4 = new System.Windows.Forms.PictureBox[SubgridSize, SubgridSize];
+            circles = new System.Windows.Forms.PictureBox[NumberOfSubgrids][,];
+            circles[0] = circles1;
+            circles[1] = circles2;
+            circles[2] = circles3;
+            circles[3] = circles4;
+            
+            int index = 0;
+            for (int i = 0; i < NumberOfSubgrids; i++)
             {
-                circles[i] = new System.Windows.Forms.PictureBox();
-                ((System.ComponentModel.ISupportInitialize)(circles[i])).BeginInit();
-                
-                circles[i].Image = global::pentago.Properties.Resources.circle;
-                circles[i].Location = new System.Drawing.Point(CirclesPositions[i].X, CirclesPositions[i].Y);
-                circles[i].Name = "circle" + (i + 1).ToString();
-                circles[i].Size = new System.Drawing.Size(CirclesSizes.Width, CirclesSizes.Height);
-                circles[i].SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-                circles[i].TabIndex = i;
-                circles[i].TabStop = false;
-                circles[i].BackColor = Color.FromArgb(139, 0, 0);
-                circles[i].Click += new System.EventHandler(CircleClicked);
-
-                this.Controls.Add(circles[i]);
-                ((System.ComponentModel.ISupportInitialize)(circles[i])).EndInit();
+                for (int j = 0; j < SubgridSize; j++)
+                {
+                    for (int k = 0; k < SubgridSize; k++)
+                    {
+                        circles[i][j, k] = new System.Windows.Forms.PictureBox();
+                        ((System.ComponentModel.ISupportInitialize)(circles[i][j, k])).BeginInit();
+                        
+                        circles[i][j, k].Image = global::pentago.Properties.Resources.circle;
+                        circles[i][j, k].Location = new System.Drawing.Point(CirclesPositions[i][j, k].X, CirclesPositions[i][j, k].Y);
+                        circles[i][j, k].Name = "circle" + (i).ToString() + (j).ToString() + (k).ToString();
+                        circles[i][j, k].Size = new System.Drawing.Size(CirclesSizes.Width, CirclesSizes.Height);
+                        circles[i][j, k].SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+                        circles[i][j, k].TabIndex = CellIndexes[index];
+                        index++;
+                        circles[i][j, k].TabStop = false;
+                        circles[i][j, k].BackColor = Color.FromArgb(139, 0, 0);;
+                        circles[i][j, k].Click += new System.EventHandler(CircleClicked);
+                        
+                        this.Controls.Add(circles[i][j, k]);
+                        ((System.ComponentModel.ISupportInitialize)(circles[i][j, k])).EndInit();
+                    }
+                }
             }
         }
-        
+
         private System.Windows.Forms.PictureBox[] arrows; // array of the arrows
+        
         // Initialize the arrows
         private void InitializeArrows()
         {
             arrows = new System.Windows.Forms.PictureBox[NumberOfArrows];
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < NumberOfArrows; i++)
             {
                 arrows[i] = new System.Windows.Forms.PictureBox();
                 ((System.ComponentModel.ISupportInitialize)(arrows[i])).BeginInit();
                 
                 arrows[i].Image = global::pentago.Properties.Resources.arrow;
                 arrows[i].Location = new System.Drawing.Point(ArrowsPositions[i].X, ArrowsPositions[i].Y);
-                arrows[i].Name = "arrow" + (i + 1).ToString();
+                arrows[i].Name = "arrow" + (i).ToString();
                 arrows[i].Size = new System.Drawing.Size(ArrowsSizes[i].Width, ArrowsSizes[i].Height);
                 arrows[i].SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
                 arrows[i].TabIndex = i;
