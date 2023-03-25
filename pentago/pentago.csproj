@@ -46,24 +46,21 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="AI\Computer.cs" />
-        <Compile Include="Board\Cell.cs" />
-        <Compile Include="Board\Grid.cs" />
-        <Compile Include="Board\Subgrid.cs" />
+        <Compile Include="BitBoard\Grid.cs" />
         <Compile Include="Configurations.cs" />
-        <Compile Include="Control\Controller.cs" />
-        <Compile Include="Coordinates.cs" />
-        <Compile Include="Rotation.cs" />
+        <Compile Include="Players\Computer.cs" />
+        <Compile Include="Players\Player.cs" />
         <Compile Include="Form1.cs">
             <SubType>Form</SubType>
         </Compile>
         <Compile Include="Form1.Designer.cs">
             <DependentUpon>Form1.cs</DependentUpon>
         </Compile>
-        <Compile Include="Position.cs" />
         <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="Size.cs" />
+        <Compile Include="Utilities\Position.cs" />
+        <Compile Include="Utilities\Rotation.cs" />
+        <Compile Include="Utilities\Size.cs" />
         <EmbeddedResource Include="Form1.resx">
           <DependentUpon>Form1.cs</DependentUpon>
         </EmbeddedResource>
@@ -98,6 +95,10 @@
     <ItemGroup>
       <Resource Include="Assets\circle.png" />
       <Content Include="Resources\subgrid.png" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="BitBoard\Player" />
+      <Folder Include="BitBoard\Sungrid" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

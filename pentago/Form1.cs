@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
 using static pentago.Configurations;
-using pentago.Control;
 
 namespace pentago
 {
@@ -12,7 +11,6 @@ namespace pentago
         private int _computerCell; // computer cell
         private int _computerRotation; // computer rotation
         private bool _isClicked; // is clicked - true if the user clicked on a circle, false otherwise
-        // private readonly Controller _controller = new Controller(); // controller
         
         // Constructor
         public Form1()
