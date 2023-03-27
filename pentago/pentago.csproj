@@ -46,7 +46,9 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="BitBoard\BidirectionalMap.cs" />
         <Compile Include="BitBoard\Grid.cs" />
+        <Compile Include="BitBoard\Option.cs" />
         <Compile Include="Configurations.cs" />
         <Compile Include="GUI\Form1.cs">
           <SubType>Form</SubType>
@@ -95,10 +97,6 @@
     <ItemGroup>
       <Resource Include="Assets\circle.png" />
       <Content Include="Resources\subgrid.png" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="BitBoard\Player" />
-      <Folder Include="BitBoard\Sungrid" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
