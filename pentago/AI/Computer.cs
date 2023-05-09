@@ -28,6 +28,19 @@ namespace pentago.AI
             _possibleMoves = new PossibleMoves();
         }
         
+        /// <summary>
+        /// Calculate the best move that the computer can play. first, the computer will play the opening move, if yes, it will play it.
+        /// otherwise, it will calculate the best move that it can play, by the CalculateMove() method.
+        /// </summary>
+        public void CalculateMove()
+        {
+            // If the computer is playing the opening move, play it.
+            if (_isOpening) Opening();
+
+            // Calculate the best move
+            if (!_isOpening) ComputerMove();
+        }
+        
         // Opening move - the computer plays the center cells
         private void Opening()
         {
@@ -46,6 +59,64 @@ namespace pentago.AI
                     return;
                 }
             }
+        }
+        
+        /// <summary>
+        /// Calculate the best move that the user can play. the function will iterate over each possible move, make it, evaluate it,
+        /// then unmake it. Then, the most optimal move will be chosen.
+        /// </summary>
+        private void ComputerMove()
+        {
+            // Initialize the variables that will hold the best move
+            _bestMove = new Move();
+            int bestScore = MinValue;
+
+            // Iterate over each possible move, make it, evaluate it, then unmake it
+            foreach (Move move in _possibleMoves.Moves)
+                if (_grid.IsEmptyCell(move.Cell))
+                {
+                    MakeMove(move.Cell, true, move.Subgrid, move.Rotation);
+                    if (Grid.CheckWin(_grid.Status2) && !Grid.CheckWin(_grid.Status1))
+                    {
+                        UnmakeMove(move.Cell, true, move.Subgrid, !move.Rotation);
+                        _cell = move.Cell;
+                        _rotation = GetRotation(move.Subgrid, move.Rotation);
+                        return;
+                    }
+                    int score = MakeUserMove();
+                    UnmakeMove(move.Cell, true, move.Subgrid, !move.Rotation);
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        _bestMove.Cell = move.Cell;
+                        _bestMove.Subgrid = move.Subgrid;
+                        _bestMove.Rotation = move.Rotation;
+                    }
+                }
+            
+            // Get the best cell and the best rotation
+            _cell = _bestMove.Cell;
+            _rotation = GetRotation(_bestMove.Subgrid, _bestMove.Rotation);
+        }
+        
+        /// <summary>
+        /// Calculate the best move that the user can play after the computer played.
+        /// </summary>
+        /// <returns> the score of that move </returns>
+        private int MakeUserMove()
+        {
+            int bestScore = MaxValue;
+            
+            // Iterate over each possible move, make it, evaluate it, then unmake it
+            foreach (Move move in _possibleMoves.Moves)
+                if (_grid.IsEmptyCell(move.Cell))
+                {
+                    MakeMove(move.Cell, false, move.Subgrid, move.Rotation);
+                    int score = Evaluate();
+                    UnmakeMove(move.Cell, false, move.Subgrid, !move.Rotation);
+                    if (score < bestScore) bestScore = score;
+                }
+            return bestScore;
         }
         
         /// <summary>
@@ -106,57 +177,6 @@ namespace pentago.AI
             return bitsInWinningState * bitsInWinningState + bitsInStreak * bitsInStreak;
         }
 
-        /// <summary>
-        /// Calculate the best move that the user can play. the function will iterate over each possible move, make it, evaluate it,
-        /// then unmake it. Then, the most optimal move will be chosen.
-        /// </summary>
-        private void ComputerMove()
-        {
-            // Initialize the variables that will hold the best move
-            _bestMove = new Move();
-            int bestScore = MinValue;
-
-            // Iterate over each possible move, make it, evaluate it, then unmake it
-            foreach (Move move in _possibleMoves.Moves)
-                if (_grid.IsEmptyCell(move.Cell))
-                {
-                    MakeMove(move.Cell, true, move.Subgrid, move.Rotation);
-                    if (Grid.CheckWin(_grid.Status2) && !Grid.CheckWin(_grid.Status1))
-                    {
-                        UnmakeMove(move.Cell, true, move.Subgrid, !move.Rotation);
-                        _cell = move.Cell;
-                        _rotation = GetRotation(move.Subgrid, move.Rotation);
-                        return;
-                    }
-                    int score = MakeUserMove();
-                    UnmakeMove(move.Cell, true, move.Subgrid, !move.Rotation);
-                    if (score > bestScore)
-                    {
-                        bestScore = score;
-                        _bestMove.Cell = move.Cell;
-                        _bestMove.Subgrid = move.Subgrid;
-                        _bestMove.Rotation = move.Rotation;
-                    }
-                }
-            
-            // Get the best cell and the best rotation
-            _cell = _bestMove.Cell;
-            _rotation = GetRotation(_bestMove.Subgrid, _bestMove.Rotation);
-        }
-
-        /// <summary>
-        /// Calculate the best move that the computer can play. first, the computer will play the opening move, if yes, it will play it.
-        /// otherwise, it will calculate the best move that it can play, by the CalculateMove() method.
-        /// </summary>
-        public void CalculateMove()
-        {
-            // If the computer is playing the opening move, play it.
-            if (_isOpening) Opening();
-
-            // Calculate the best move
-            if (!_isOpening) ComputerMove();
-        }
-        
         // Make a move - update the status and rotate the subgrid of the player
         private void MakeMove(int cell, bool isComputerMove, int subgrid, bool rotation)
         {
@@ -177,26 +197,6 @@ namespace pentago.AI
             for (int i = 0; i < NumberOfRotations; i++)
                 if (Rotations[i].SubgridIndex == subgrid && Rotations[i].IsClockwise == rotation) return i;
             return None;
-        }
-        
-        /// <summary>
-        /// Calculate the best move that the user can play after the computer played.
-        /// </summary>
-        /// <returns> the score of that move </returns>
-        private int MakeUserMove()
-        {
-            int bestScore = MaxValue;
-            
-            // Iterate over each possible move, make it, evaluate it, then unmake it
-            foreach (Move move in _possibleMoves.Moves)
-                if (_grid.IsEmptyCell(move.Cell))
-                {
-                    MakeMove(move.Cell, false, move.Subgrid, move.Rotation);
-                    int score = Evaluate();
-                    UnmakeMove(move.Cell, false, move.Subgrid, !move.Rotation);
-                    if (score < bestScore) bestScore = score;
-                }
-            return bestScore;
         }
 
         // Getter and Setter for the cell

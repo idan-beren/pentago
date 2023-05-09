@@ -64,12 +64,53 @@ namespace pentago.BitBoard
             }
 
             _bitBoard = _status1 | _status2;
-        } 
-        
-        // Checks if the cell is empty and returns true if it is empty and false otherwise
-        public bool IsEmptyCell(int cellNumber)
+        }
+
+        // Rotate a subgrid clockwise or counterclockwise and update the bitboard
+        public void RotateSubgrid(int subgridNumber, bool isClockwise)
         {
-            return (_bitBoard & (Bit << FirstBit - cellNumber)) == 0;
+            Subgrids subgrid = (Subgrids)subgridNumber;
+
+            switch (isClockwise)
+            {
+                case true: // clockwise
+                    _status1 = Rotate(_status1, subgrid, Indices1);
+                    _status2 = Rotate(_status2, subgrid, Indices1);
+                    break;
+                case false: // counter-clockwise
+                    _status1 = Rotate(_status1, subgrid, Indices2);
+                    _status2 = Rotate(_status2, subgrid, Indices2);
+                    break;
+            }
+
+            _bitBoard = _status1 | _status2;
+        }
+
+        /// <summary>
+        /// Rotates the subgrid clockwise or counterclockwise. the subgrid being extracted from the status,
+        /// rotated and inserted back into the status
+        /// </summary>
+        /// <param name="status"> status of the player  </param>
+        /// <param name="subgridNumber"> the number of the subgrid to rotate </param>
+        /// <param name="indices"> helps to manege the rotation </param>
+        /// <returns> the new rotated status </returns>
+        private static long Rotate(long status, Subgrids subgridNumber, byte[] indices)
+        {
+            // Extract the subgrid from the status
+            long subgrid = ExtractSubgrid(status, subgridNumber);
+            
+            // Extract the bits of the subgrid
+            byte[] bitArray = ExtractBitsFromSubgrid(subgrid);
+            
+            // Perform bitwise rotation on each bit
+            byte[] rotatedBitArray = PerformBitwiseRotation(bitArray, indices);
+            
+            // Combine the rotated bits into a new subgrid
+            long rotatedSubgrid = CombineRotatedBitsIntoSubgrid(rotatedBitArray);
+            
+            // Insert the new rotated subgrid into the status
+            long newStatus = InsertSubgrid(status, rotatedSubgrid, subgridNumber);
+            return newStatus;
         }
         
         /// <summary>
@@ -122,19 +163,9 @@ namespace pentago.BitBoard
             return newStatus;
         }
 
-        /// <summary>
-        /// Rotates the subgrid clockwise or counterclockwise. the subgrid being extracted from the status,
-        /// rotated and inserted back into the status
-        /// </summary>
-        /// <param name="status"> status of the player  </param>
-        /// <param name="subgridNumber"> the number of the subgrid to rotate </param>
-        /// <param name="indices"> helps to manege the rotation </param>
-        /// <returns> the new rotated status </returns>
-        private static long Rotate(long status, Subgrids subgridNumber, byte[] indices)
+        // Extracts the bits from the subgrid and returns them as an array
+        private static byte[] ExtractBitsFromSubgrid(long subgrid)
         {
-            long subgrid = ExtractSubgrid(status, subgridNumber);
-            
-            // Extract the bits of the subgrid
             byte[] bitArray = new byte[SubgridLength];
             for (int i = 0; i < SubgridLength; i++)
             {
@@ -142,42 +173,28 @@ namespace pentago.BitBoard
                 int mask = (int)Bit << SubgridLength - 1 - i;
                 bitArray[i] = (byte)((subgrid & mask) >> SubgridLength - 1 - i);
             }
-            
-            // Perform bitwise rotation on each bit
+            return bitArray;
+        }
+        
+        // Performs bitwise rotation of the subgrid using the indices array and returns the rotated subgrid
+        private static byte[] PerformBitwiseRotation(byte [] bitArray, byte[] indices)
+        {
             byte[] rotatedBitArray = new byte[SubgridLength];
             for (int i = 0; i < SubgridLength; i++)
                 rotatedBitArray[indices[i]] = bitArray[i];
-            
-            // Combine the rotated bits into a new matrix
+            return rotatedBitArray;
+        }
+        
+        // Combines the rotated bits into a new subgrid and returns it
+        private static long CombineRotatedBitsIntoSubgrid(byte[] rotatedBitArray)
+        {
             long rotatedSubgrid = 0L;
             for (int i = 0; i < SubgridLength; i++)
             {
                 rotatedSubgrid <<= 1;
                 rotatedSubgrid |= rotatedBitArray[i];
             }
-            
-            long newStatus = InsertSubgrid(status, rotatedSubgrid, subgridNumber);
-            return newStatus;
-        }
-
-        // Rotate a subgrid clockwise or counterclockwise and update the bitboard
-        public void RotateSubgrid(int subgridNumber, bool isClockwise)
-        {
-            Subgrids subgrid = (Subgrids)subgridNumber;
-
-            switch (isClockwise)
-            {
-                case true: // clockwise
-                    _status1 = Rotate(_status1, subgrid, Indices1);
-                    _status2 = Rotate(_status2, subgrid, Indices1);
-                    break;
-                case false: // counter-clockwise
-                    _status1 = Rotate(_status1, subgrid, Indices2);
-                    _status2 = Rotate(_status2, subgrid, Indices2);
-                    break;
-            }
-
-            _bitBoard = _status1 | _status2;
+            return rotatedSubgrid;
         }
         
         // Check if a player won by iterating over the winning masks, return true if he won and false otherwise
@@ -186,12 +203,6 @@ namespace pentago.BitBoard
             foreach (long mask in MasksIterator)
                 if ((status & mask) == mask) return true;
             return false;
-        }
-
-        // Check if the grid is full, return true if it is and false otherwise
-        private bool IsFull()
-        {
-            return _bitBoard == FullStatus;
         }
 
         // Check the state of the game: player1 won, player2 won, draw or nothing and return the corresponding GameStatus
@@ -214,6 +225,18 @@ namespace pentago.BitBoard
             
             // Nothing happened
             return GameStatus.Nothing;
+        }
+        
+        // Check if the grid is full, return true if it is and false otherwise
+        private bool IsFull()
+        {
+            return _bitBoard == FullStatus;
+        }
+        
+        // Checks if the cell is empty and returns true if it is empty and false otherwise
+        public bool IsEmptyCell(int cellNumber)
+        {
+            return (_bitBoard & (Bit << FirstBit - cellNumber)) == 0;
         }
         
         // Initialize the masks
