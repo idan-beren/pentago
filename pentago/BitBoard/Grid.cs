@@ -169,7 +169,6 @@ namespace pentago.BitBoard
             byte[] bitArray = new byte[SubgridLength];
             for (int i = 0; i < SubgridLength; i++)
             {
-                // Extract from left to right
                 int mask = (int)Bit << SubgridLength - 1 - i;
                 bitArray[i] = (byte)((subgrid & mask) >> SubgridLength - 1 - i);
             }
