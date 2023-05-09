@@ -92,6 +92,12 @@ namespace pentago
         // None
         public const int None = -1;
         
+        // Not scoring 
+        public const int NotScoring = 2;
+        
+        // Best scoring
+        public const int BestScoring = 5;
+
         // The positions of the subgrids
         public static readonly Position[] SubgridsPositions =
         {

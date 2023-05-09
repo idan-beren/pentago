@@ -12,7 +12,7 @@ namespace pentago.AI
         private int _cell; // cell - the cell that the computer will play
         private int _rotation; // rotation - the rotation that the computer will play
         private readonly Grid _grid; // grid - the grid of the game
-        private static long _middles; // middles - the middle cells of the grid
+        private static long _middles = 0b000000010010000000000000010010000000; // middles - the middle cells of the grid
         private const int MaxValue = 1000000; // max value
         private const int MinValue = -1000000; // min value
         private bool _isOpening; // isOpening - true if the computer is playing the opening move
@@ -24,7 +24,6 @@ namespace pentago.AI
         {
             _grid = grid;
             _random = new Random();
-            _middles = 0b000000010010000000000000010010000000;
             _isOpening = true;
             _possibleMoves = new PossibleMoves();
         }
@@ -102,8 +101,8 @@ namespace pentago.AI
         /// <returns> the score for that move </returns>
         private static int ScoreMarbles(int bitsInWinningState, int bitsInStreak)
         {
-            if (bitsInWinningState >= 5) return MaxValue;
-            if (bitsInWinningState <= 2) return 0;
+            if (bitsInWinningState >= BestScoring) return MaxValue;
+            if (bitsInWinningState <= NotScoring) return 0;
             return bitsInWinningState * bitsInWinningState + bitsInStreak * bitsInStreak;
         }
 
