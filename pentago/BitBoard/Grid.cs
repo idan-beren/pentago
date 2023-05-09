@@ -81,16 +81,16 @@ namespace pentago.BitBoard
         private static long ExtractSubgrid(long status, int subgridNumber)
         {
             // Shift the status to the right
-            status <<= 28;
-            if (subgridNumber == 2 || subgridNumber == 3) status <<= 18;
-            if (subgridNumber == 1 || subgridNumber == 3) status <<= 3;
+            status <<= EmptySpace;
+            if (subgridNumber == 2 || subgridNumber == 3) status <<= HorizontalShift;
+            if (subgridNumber == 1 || subgridNumber == 3) status <<= VerticalShift;
                 
             // Extract the subgrid using bitwise operations
-            long first = status >> 61 & 0b111;
-            status <<= 6;
-            long second = status >> 61 & 0b111;
-            status <<= 6;
-            long third = status >> 61 & 0b111;
+            long first = status >> ExtractRowInSubgrid & RowInSubgridMask;
+            status <<= NextRowInSubgrid;
+            long second = status >> ExtractRowInSubgrid & RowInSubgridMask;
+            status <<= NextRowInSubgrid;
+            long third = status >> ExtractRowInSubgrid & RowInSubgridMask;
             long subgrid = first << 6 | second << 3 | third;
             
             return subgrid;
@@ -106,14 +106,14 @@ namespace pentago.BitBoard
         private static long InsertSubgrid(long status, long subgrid, int subgridNumber)
         {
             // Unpack the subgrid
-            long first = subgrid & 0b111;
-            long second = subgrid & 0b111000;
-            long third = subgrid & 0b111000000;
+            long first = subgrid & RowInSubgridMask;
+            long second = subgrid & RowInSubgridMask << 3;
+            long third = subgrid & RowInSubgridMask << 6;
             long newSubgrid = first | second << 3 | third << 6;
             
             // Shift the status to the right
-            if (subgridNumber == 0 || subgridNumber == 1) newSubgrid <<= 18;
-            if (subgridNumber == 0 || subgridNumber == 2) newSubgrid <<= 3;
+            if (subgridNumber == 0 || subgridNumber == 1) newSubgrid <<= HorizontalShift;
+            if (subgridNumber == 0 || subgridNumber == 2) newSubgrid <<= VerticalShift;
             
             // Insert the subgrid using bitwise operations
             long newStatus= status & ~(_subgridsMasks[subgridNumber]);
@@ -176,6 +176,42 @@ namespace pentago.BitBoard
             }
 
             _bitBoard = _status1 | _status2;
+        }
+        
+        // Check if a player won by iterating over the winning masks, return true if he won and false otherwise
+        public static bool CheckWin(long status)
+        {
+            foreach (long mask in MasksIterator)
+                if ((status & mask) == mask) return true;
+            return false;
+        }
+
+        // Check if the grid is full, return true if it is and false otherwise
+        private bool IsFull()
+        {
+            return _bitBoard == FullStatus;
+        }
+
+        // Check the state of the game: player1 won, player2 won, draw or nothing and return the corresponding GameStatus
+        public GameStatus CheckGameStatus()
+        {
+            bool player1 = CheckWin(_status1);  
+            bool player2 = CheckWin(_status2);
+            
+            // Check if both players won
+            if (player1 && player2) return GameStatus.Draw;
+                
+            // Check if player1 won
+            if (player1) return GameStatus.Player1;
+            
+            // Check if player2 won
+            if (player2) return GameStatus.Player2;
+            
+            // Check if the grid is full
+            if (IsFull()) return GameStatus.Draw;
+            
+            // Nothing happened
+            return GameStatus.Nothing;
         }
         
         // Initialize the masks
@@ -244,42 +280,6 @@ namespace pentago.BitBoard
             _diagonalsMasks[5] = 0b000000000010000100001000010000100000;
             _diagonalsMasks[6] = 0b000010000100001000010000100000000000;
             _diagonalsMasks[7] = 0b000000000001000010000100001000010000;
-        }
-        
-        // Check if a player won by iterating over the winning masks, return true if he won and false otherwise
-        public static bool CheckWin(long status)
-        {
-            foreach (long mask in MasksIterator)
-                if ((status & mask) == mask) return true;
-            return false;
-        }
-
-        // Check if the grid is full, return true if it is and false otherwise
-        private bool IsFull()
-        {
-            return _bitBoard == FullStatus;
-        }
-
-        // Check the state of the game: player1 won, player2 won, draw or nothing and return the corresponding GameStatus
-        public GameStatus CheckGameStatus()
-        {
-            bool player1 = CheckWin(_status1);  
-            bool player2 = CheckWin(_status2);
-            
-            // Check if both players won
-            if (player1 && player2) return GameStatus.Draw;
-                
-            // Check if player1 won
-            if (player1) return GameStatus.Player1;
-            
-            // Check if player2 won
-            if (player2) return GameStatus.Player2;
-            
-            // Check if the grid is full
-            if (IsFull()) return GameStatus.Draw;
-            
-            // Nothing happened
-            return GameStatus.Nothing;
         }
 
         // Getter and setter for the bitboard

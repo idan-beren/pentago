@@ -97,6 +97,18 @@ namespace pentago
         
         // Best scoring
         public const int BestScoring = 5;
+        
+        // Empty space
+        public const int EmptySpace = 28;
+        
+        // RowInSubgrid
+        public const int RowInSubgridMask = 0b111;
+        
+        // Extract RowInSubgrid
+        public const int ExtractRowInSubgrid = 61;
+        
+        // Next RowInSubgrid
+        public const int NextRowInSubgrid = 6;
 
         // The positions of the subgrids
         public static readonly Position[] SubgridsPositions =
