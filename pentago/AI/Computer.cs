@@ -121,7 +121,7 @@ namespace pentago.AI
                 if (_grid.IsEmptyCell(move.Cell))
                 {
                     MakeMove(move.Cell, true, move.Subgrid, move.Rotation);
-                    if (Grid.CheckWin(_grid.Status2))
+                    if (Grid.CheckWin(_grid.Status2) && !Grid.CheckWin(_grid.Status1))
                     {
                         UnmakeMove(move.Cell, true, move.Subgrid, !move.Rotation);
                         _cell = move.Cell;

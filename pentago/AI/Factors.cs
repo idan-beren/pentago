@@ -11,26 +11,6 @@ namespace pentago.AI
         private const long Corners = 0b100001000000000000000000000000100001; // corner cells
 
         /// <summary>
-        /// Count the amount of cells that placed in the winning option, only if that option to win doesn't contain opponent's cells.
-        /// This function is being called from the evaluation function, there it checks to every option to win if it actually can lead to a win
-        /// because if it contains opponent's cells, it can't lead to a win.
-        /// </summary>
-        /// <param name="status1"> the status of the player </param>
-        /// <param name="status2"> the status of the opponent </param>
-        /// <param name="mask"> mask that represents an optional win </param>
-        /// <returns> the amount of cells in that option to win, only if that option to win doesn't contain opponent's cells </returns>
-        public static int CountBitsInWinningState(long status1, long status2, long mask)
-        {
-            int count = 0;
-            status1 &= mask;
-            status2 &= mask;
-            if (status1 == 0 || status2 != 0) return 0;
-            for (int i = 0; i < NumberOfBits; i++)
-                if ((status1 & (Bit << i)) != 0) count++;
-            return count;
-        }
-        
-        /// <summary>
         /// Check the length of the streak of a player. streak = cells of the player that are next to each other.
         /// This function is being called from the evaluation function, there it checks to every option to win the streaks
         /// of cells in the winning state.
@@ -52,6 +32,26 @@ namespace pentago.AI
             return count;
         }
         
+        /// <summary>
+        /// Count the amount of cells that placed in the winning option, only if that option to win doesn't contain opponent's cells.
+        /// This function is being called from the evaluation function, there it checks to every option to win if it actually can lead to a win
+        /// because if it contains opponent's cells, it can't lead to a win.
+        /// </summary>
+        /// <param name="status1"> the status of the player </param>
+        /// <param name="status2"> the status of the opponent </param>
+        /// <param name="mask"> mask that represents an optional win </param>
+        /// <returns> the amount of cells in that option to win, only if that option to win doesn't contain opponent's cells </returns>
+        public static int CountBitsInWinningState(long status1, long status2, long mask)
+        {
+            int count = 0;
+            status1 &= mask;
+            status2 &= mask;
+            if (status1 == 0 || status2 != 0) return 0;
+            for (int i = 0; i < NumberOfBits; i++)
+                if ((status1 & (Bit << i)) != 0) count++;
+            return count;
+        }
+
         /// <summary>
         /// Check the average number of bits at the symmetries.
         /// </summary>
