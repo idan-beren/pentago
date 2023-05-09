@@ -15,8 +15,8 @@ namespace pentago.BitBoard
         private static long[] _subgridsMasks; // subgrids masks
         public static MasksIterator MasksIterator; // masks iterator
         public static SubgridsIterator SubgridsIterator; // subgrids masks iterator
-        private static byte[] _indices1 = { 2, 5, 8, 1, 4, 7, 0, 3, 6 }; // the correlation between the cell indexes to rotate clockwise
-        private static byte[] _indices2 = { 6, 3, 0, 7, 4, 1, 8, 5, 2 }; // the correlation between the cell indexes to rotate counterclockwise
+        private static readonly byte[] Indices1 = { 2, 5, 8, 1, 4, 7, 0, 3, 6 }; // the correlation between the cell indexes to rotate clockwise
+        private static readonly byte[] Indices2 = { 6, 3, 0, 7, 4, 1, 8, 5, 2 }; // the correlation between the cell indexes to rotate counterclockwise
         
         // Constructor
         public Grid()
@@ -166,12 +166,12 @@ namespace pentago.BitBoard
             switch (isClockwise)
             {
                 case true: // clockwise
-                    _status1 = Rotate(_status1, subgridNumber, _indices1);
-                    _status2 = Rotate(_status2, subgridNumber, _indices1);
+                    _status1 = Rotate(_status1, subgridNumber, Indices1);
+                    _status2 = Rotate(_status2, subgridNumber, Indices1);
                     break;
                 case false: // counter-clockwise
-                    _status1 = Rotate(_status1, subgridNumber, _indices2);
-                    _status2 = Rotate(_status2, subgridNumber, _indices2);
+                    _status1 = Rotate(_status1, subgridNumber, Indices2);
+                    _status2 = Rotate(_status2, subgridNumber, Indices2);
                     break;
             }
 

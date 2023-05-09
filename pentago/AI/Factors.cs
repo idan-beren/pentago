@@ -5,10 +5,10 @@ namespace pentago.AI
 {
     public static class Factors
     {
-        private static long _horizontal = 0b111111111111111111000000000000000000; // horizontal symmetry
-        private static long _vertical = 0b111000111000111000111000111000111000; // vertical symmetry
-        private static long _centers = 0b000000000000001100001100000000000000; // center cells
-        private static long _corners = 0b100001000000000000000000000000100001; // corner cells
+        private const long Horizontal = 0b111111111111111111000000000000000000; // horizontal symmetry
+        private const long Vertical = 0b111000111000111000111000111000111000; // vertical symmetry
+        private const long Centers = 0b000000000000001100001100000000000000; // center cells
+        private const long Corners = 0b100001000000000000000000000000100001; // corner cells
 
         /// <summary>
         /// Count the amount of cells that placed in the winning option, only if that option to win doesn't contain opponent's cells.
@@ -60,8 +60,8 @@ namespace pentago.AI
         public static int CountBitsInSymmetries(long status)
         {
             int count = 0;
-            count += CountBitsInSymmetry(status, _horizontal, Symmetry.Horizontal);
-            count += CountBitsInSymmetry(status, _vertical, Symmetry.Vertical);
+            count += CountBitsInSymmetry(status, Horizontal, Symmetry.Horizontal);
+            count += CountBitsInSymmetry(status, Vertical, Symmetry.Vertical);
             return count / NumberOfSymmetries;
         }
 
@@ -97,7 +97,7 @@ namespace pentago.AI
         /// <returns> the number of bits that are in the centers and corners </returns>
         public static int ControlCentersAndCorners(long status)
         {
-            status &= _centers | _corners;
+            status &= Centers | Corners;
             return CountBits(status);
         }
         

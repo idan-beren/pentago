@@ -12,7 +12,7 @@ namespace pentago.AI
         private int _cell; // cell - the cell that the computer will play
         private int _rotation; // rotation - the rotation that the computer will play
         private readonly Grid _grid; // grid - the grid of the game
-        private static long _middles = 0b000000010010000000000000010010000000; // middles - the middle cells of the grid
+        private const long Middles = 0b000000010010000000000000010010000000; // middles - the middle cells of the grid
         private const int MaxValue = 1000000; // max value
         private const int MinValue = -1000000; // min value
         private bool _isOpening; // isOpening - true if the computer is playing the opening move
@@ -32,10 +32,10 @@ namespace pentago.AI
         private void Opening()
         {
             long bitBoard = _grid.BitBoard;
-            if ((bitBoard & _middles) == _middles) _isOpening = false;
+            if ((bitBoard & Middles) == Middles) _isOpening = false;
             if (!_isOpening) return;
             
-            long options = (bitBoard & _middles) ^ _middles;
+            long options = (bitBoard & Middles) ^ Middles;
             for (int i = 0; i < NumberOfBits; i++)
             {
                 long mask = Bit << FirstBit - i;
