@@ -78,12 +78,12 @@ namespace pentago.BitBoard
         /// <param name="status"> the status of the player </param>
         /// <param name="subgridNumber"> the number of the subgrid to extract </param>
         /// <returns> the extracted subgrid </returns>
-        private static long ExtractSubgrid(long status, int subgridNumber)
+        private static long ExtractSubgrid(long status, Subgrids subgridNumber)
         {
             // Shift the status to the right
             status <<= EmptySpace;
-            if (subgridNumber == 2 || subgridNumber == 3) status <<= HorizontalShift;
-            if (subgridNumber == 1 || subgridNumber == 3) status <<= VerticalShift;
+            if (subgridNumber == Subgrids.Subgrid3 || subgridNumber == Subgrids.Subgrid4) status <<= HorizontalShift;
+            if (subgridNumber == Subgrids.Subgrid2 || subgridNumber == Subgrids.Subgrid4) status <<= VerticalShift;
                 
             // Extract the subgrid using bitwise operations
             long first = status >> ExtractRowInSubgrid & RowInSubgridMask;
@@ -91,7 +91,7 @@ namespace pentago.BitBoard
             long second = status >> ExtractRowInSubgrid & RowInSubgridMask;
             status <<= NextRowInSubgrid;
             long third = status >> ExtractRowInSubgrid & RowInSubgridMask;
-            long subgrid = first << 6 | second << 3 | third;
+            long subgrid = first << (BitsInRowInSubgrid * 2) | second << BitsInRowInSubgrid | third;
             
             return subgrid;
         }
@@ -103,20 +103,20 @@ namespace pentago.BitBoard
         /// <param name="subgrid"> the new rotated subgrid </param>
         /// <param name="subgridNumber"> the number of the subgrid to insert </param>
         /// <returns> the new status after inserting the rotated subgrid </returns>
-        private static long InsertSubgrid(long status, long subgrid, int subgridNumber)
+        private static long InsertSubgrid(long status, long subgrid, Subgrids subgridNumber)
         {
             // Unpack the subgrid
             long first = subgrid & RowInSubgridMask;
-            long second = subgrid & RowInSubgridMask << 3;
-            long third = subgrid & RowInSubgridMask << 6;
-            long newSubgrid = first | second << 3 | third << 6;
+            long second = subgrid & RowInSubgridMask << BitsInRowInSubgrid;
+            long third = subgrid & RowInSubgridMask << BitsInRowInSubgrid << BitsInRowInSubgrid;
+            long newSubgrid = first | second << BitsInRowInSubgrid | third << (BitsInRowInSubgrid * 2);
             
             // Shift the status to the right
-            if (subgridNumber == 0 || subgridNumber == 1) newSubgrid <<= HorizontalShift;
-            if (subgridNumber == 0 || subgridNumber == 2) newSubgrid <<= VerticalShift;
+            if (subgridNumber == Subgrids.Subgrid1 || subgridNumber == Subgrids.Subgrid2) newSubgrid <<= HorizontalShift;
+            if (subgridNumber == Subgrids.Subgrid1 || subgridNumber == Subgrids.Subgrid3) newSubgrid <<= VerticalShift;
             
             // Insert the subgrid using bitwise operations
-            long newStatus= status & ~(_subgridsMasks[subgridNumber]);
+            long newStatus= status & ~(_subgridsMasks[(int)subgridNumber]);
             newStatus |= newSubgrid;
             
             return newStatus;
@@ -130,7 +130,7 @@ namespace pentago.BitBoard
         /// <param name="subgridNumber"> the number of the subgrid to rotate </param>
         /// <param name="indices"> helps to manege the rotation </param>
         /// <returns> the new rotated status </returns>
-        private static long Rotate(long status, int subgridNumber, byte[] indices)
+        private static long Rotate(long status, Subgrids subgridNumber, byte[] indices)
         {
             long subgrid = ExtractSubgrid(status, subgridNumber);
             
@@ -163,15 +163,17 @@ namespace pentago.BitBoard
         // Rotate a subgrid clockwise or counterclockwise and update the bitboard
         public void RotateSubgrid(int subgridNumber, bool isClockwise)
         {
+            Subgrids subgrid = (Subgrids)subgridNumber;
+
             switch (isClockwise)
             {
                 case true: // clockwise
-                    _status1 = Rotate(_status1, subgridNumber, Indices1);
-                    _status2 = Rotate(_status2, subgridNumber, Indices1);
+                    _status1 = Rotate(_status1, subgrid, Indices1);
+                    _status2 = Rotate(_status2, subgrid, Indices1);
                     break;
                 case false: // counter-clockwise
-                    _status1 = Rotate(_status1, subgridNumber, Indices2);
-                    _status2 = Rotate(_status2, subgridNumber, Indices2);
+                    _status1 = Rotate(_status1, subgrid, Indices2);
+                    _status2 = Rotate(_status2, subgrid, Indices2);
                     break;
             }
 

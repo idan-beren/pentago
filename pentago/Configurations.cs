@@ -11,7 +11,7 @@ namespace pentago
             Player1,
             Player2
         }
-        
+
         // The status of the game (player 1 wins, player 2 wins, draw, nothing)
         public enum GameStatus
         {
@@ -20,16 +20,24 @@ namespace pentago
             Draw,
             Nothing
         }
-        
+
         // The symmetry of the grid (horizontal, vertical)
         public enum Symmetry
         {
-            None,
             Horizontal,
             Vertical
         }
 
-        // The number of the subgrids
+        // Subgrids
+        public enum Subgrids
+        {
+            Subgrid1,
+            Subgrid2,
+            Subgrid3, 
+            Subgrid4
+        }
+
+    // The number of the subgrids
         public const int NumberOfSubgrids = 4;
         
         // The size of the subgrid
@@ -109,6 +117,9 @@ namespace pentago
         
         // Next RowInSubgrid
         public const int NextRowInSubgrid = 6;
+        
+        // Next row
+        public const int BitsInRowInSubgrid = 3;
 
         // The positions of the subgrids
         public static readonly Position[] SubgridsPositions =
