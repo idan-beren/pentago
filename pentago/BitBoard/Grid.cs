@@ -1,168 +1,320 @@
-using System.Collections.Generic;
 using static pentago.Configurations;
-using pentago.Players;
 
 namespace pentago.BitBoard
 {
+    // The grid of the game. The grid is represented by a bitboard.
     public class Grid
     {
-        private static int _numberOfOptions = 32; // options to win
-        private static List<Option> _options; // list of options to win
-        private static long[] _masks; // masks
-        private static BidirectionalMap<int, (int, int)> _bitMap; // map of bits
-        private static Player _whitePlayer; // white player
-        private static Computer _blackPlayer; // black player
-        private bool _isRunning; // is the game running?
+        private long _status1; // status of the first player
+        private long _status2; // status of the second player
+        private long _bitBoard; // bitboard = status1 | status2
+        private static long[] _rowsMasks; // rows masks - options to win in a row
+        private static long[] _columnsMasks; // columns masks - options to win in a column
+        private static long[] _diagonalsMasks; // diagonals masks - options to win in a diagonal
+        private static long[][] _masks; // masks - options to win
+        private static long[] _subgridsMasks; // subgrids masks
+        public static MasksIterator MasksIterator; // masks iterator
+        public static SubgridsIterator SubgridsIterator; // subgrids masks iterator
+        private static byte[] _indices1 = { 2, 5, 8, 1, 4, 7, 0, 3, 6 }; // the correlation between the cell indexes to rotate clockwise
+        private static byte[] _indices2 = { 6, 3, 0, 7, 4, 1, 8, 5, 2 }; // the correlation between the cell indexes to rotate counterclockwise
         
         // Constructor
         public Grid()
         {
-            InitializeOptions();
+            _status1 = EmptyStatus;
+            _status2 = EmptyStatus;
+            _bitBoard = EmptyStatus;
+            _rowsMasks = new long[NumberOfRowMasks];
+            _columnsMasks = new long[NumberOfColumnMasks];
+            _diagonalsMasks = new long[NumberOfDiagonalMasks];
+            _masks = new long[KindOfMasks][];
+            _subgridsMasks = new long[NumberOfSubgridMasks];
             InitializeMasks();
-            InitializeBitsMap();
-            InitializePlayers();
-            _isRunning = true;
+            MasksIterator = new MasksIterator();
+            SubgridsIterator = new SubgridsIterator();
         }
         
-        // Initialize the options
-        private static void InitializeOptions()
+        // Turns on the bit of the cell in the player's status and updates the bitboard
+        public void UpdateStatus(CellStatus player, int cellNumber)
         {
-            _options = new List<Option>
+            switch (player)
             {
-                // -------------------------------- Lines---------------------------------------------------------------
-                new Option(0x607L, 3),
-                new Option(0xE06L, 3),
-                new Option(0x3038L,3),
-                new Option(0x7030L,3),
-                new Option(0x181C0L,3),
-                new Option(0x38180L,3),
-                new Option(0x181C0000L,0),
-                new Option(0x38180000L,0),
-                new Option(0xC0E00000L,0),
-                new Option(0x1C0C00000L,0),
-                new Option(0x607000000L,1),
-                new Option(0xE06000000L,1),
-                // -------------------------------- Columns-------------------------------------------------------------
-                new Option(0x240049L,1),
-                new Option(0x1240048L,1),
-                new Option(0x480092L,1),
-                new Option(0x2480090L,1),
-                new Option(0x900124L,1),
-                new Option(0x4900120L,1),
-                new Option(0x48009200L,2),
-                new Option(0x248009000L,2),
-                new Option(0x90012400L,2),
-                new Option(0x490012000L,2),
-                new Option(0x120024800L,0),
-                new Option(0x920024000L,0),
-                // -------------------------------- Diagonals-----------------------------------------------------------
-                // Secondary:
-                new Option(0x110008022L,2),
-                new Option(0x440100088L,1),
-                new Option(0x281500L,3),
-                new Option(0xa814000L,0),
-                // Main:
-                new Option(0x88000111L,1),
-                new Option(0x888000110L,1),
-                new Option(0x50A800L,3),
-                new Option(0x150A000L,3)
-            };
+                case CellStatus.Player1:
+                    _status1 |= Bit << FirstBit - cellNumber;
+                    break;
+                case CellStatus.Player2:
+                    _status2 |= Bit << FirstBit - cellNumber;
+                    break;
+            }
+
+            _bitBoard = _status1 | _status2;
+        }
+        
+        // Turns off the bit of the cell in the player's status and updates the bitboard
+        public void RemoveStatus(CellStatus player, int cellNumber)
+        {
+            switch (player)
+            {
+                case CellStatus.Player1:
+                    _status1 &= ~(Bit << FirstBit - cellNumber);
+                    break;
+                case CellStatus.Player2:
+                    _status2 &= ~(Bit << FirstBit - cellNumber);
+                    break;
+            }
+
+            _bitBoard = _status1 | _status2;
+        } 
+        
+        // Checks if the cell is empty and returns true if it is empty and false otherwise
+        public bool IsEmptyCell(int cellNumber)
+        {
+            return (_bitBoard & (Bit << FirstBit - cellNumber)) == 0;
+        }
+        
+        /// <summary>
+        /// Extracts the subgrid from the status using bitwise operations
+        /// </summary>
+        /// <param name="status"> the status of the player </param>
+        /// <param name="subgridNumber"> the number of the subgrid to extract </param>
+        /// <returns> the extracted subgrid </returns>
+        private static long ExtractSubgrid(long status, int subgridNumber)
+        {
+            // Shift the status to the right
+            status <<= 28;
+            if (subgridNumber == 2 || subgridNumber == 3) status <<= 18;
+            if (subgridNumber == 1 || subgridNumber == 3) status <<= 3;
+                
+            // Extract the subgrid using bitwise operations
+            long first = status >> 61 & 0b111;
+            status <<= 6;
+            long second = status >> 61 & 0b111;
+            status <<= 6;
+            long third = status >> 61 & 0b111;
+            long subgrid = first << 6 | second << 3 | third;
+            
+            return subgrid;
+        }
+        
+        /// <summary>
+        /// Inserts the new rotated subgrid into the status using bitwise operations
+        /// </summary>
+        /// <param name="status"> the status of the player </param>
+        /// <param name="subgrid"> the new rotated subgrid </param>
+        /// <param name="subgridNumber"> the number of the subgrid to insert </param>
+        /// <returns> the new status after inserting the rotated subgrid </returns>
+        private static long InsertSubgrid(long status, long subgrid, int subgridNumber)
+        {
+            // Unpack the subgrid
+            long first = subgrid & 0b111;
+            long second = subgrid & 0b111000;
+            long third = subgrid & 0b111000000;
+            long newSubgrid = first | second << 3 | third << 6;
+            
+            // Shift the status to the right
+            if (subgridNumber == 0 || subgridNumber == 1) newSubgrid <<= 18;
+            if (subgridNumber == 0 || subgridNumber == 2) newSubgrid <<= 3;
+            
+            // Insert the subgrid using bitwise operations
+            long newStatus= status & ~(_subgridsMasks[subgridNumber]);
+            newStatus |= newSubgrid;
+            
+            return newStatus;
+        }
+
+        /// <summary>
+        /// Rotates the subgrid clockwise or counterclockwise. the subgrid being extracted from the status,
+        /// rotated and inserted back into the status
+        /// </summary>
+        /// <param name="status"> status of the player  </param>
+        /// <param name="subgridNumber"> the number of the subgrid to rotate </param>
+        /// <param name="indices"> helps to manege the rotation </param>
+        /// <returns> the new rotated status </returns>
+        private static long Rotate(long status, int subgridNumber, byte[] indices)
+        {
+            long subgrid = ExtractSubgrid(status, subgridNumber);
+            
+            // Extract the bits of the subgrid
+            byte[] bitArray = new byte[SubgridLength];
+            for (int i = 0; i < SubgridLength; i++)
+            {
+                // Extract from left to right
+                int mask = (int)Bit << SubgridLength - 1 - i;
+                bitArray[i] = (byte)((subgrid & mask) >> SubgridLength - 1 - i);
+            }
+            
+            // Perform bitwise rotation on each bit
+            byte[] rotatedBitArray = new byte[SubgridLength];
+            for (int i = 0; i < SubgridLength; i++)
+                rotatedBitArray[indices[i]] = bitArray[i];
+            
+            // Combine the rotated bits into a new matrix
+            long rotatedSubgrid = 0L;
+            for (int i = 0; i < SubgridLength; i++)
+            {
+                rotatedSubgrid <<= 1;
+                rotatedSubgrid |= rotatedBitArray[i];
+            }
+            
+            long newStatus = InsertSubgrid(status, rotatedSubgrid, subgridNumber);
+            return newStatus;
+        }
+
+        // Rotate a subgrid clockwise or counterclockwise and update the bitboard
+        public void RotateSubgrid(int subgridNumber, bool isClockwise)
+        {
+            switch (isClockwise)
+            {
+                case true: // clockwise
+                    _status1 = Rotate(_status1, subgridNumber, _indices1);
+                    _status2 = Rotate(_status2, subgridNumber, _indices1);
+                    break;
+                case false: // counter-clockwise
+                    _status1 = Rotate(_status1, subgridNumber, _indices2);
+                    _status2 = Rotate(_status2, subgridNumber, _indices2);
+                    break;
+            }
+
+            _bitBoard = _status1 | _status2;
         }
         
         // Initialize the masks
         private static void InitializeMasks()
         {
-            _masks = new long[NumberOfSubgrids];
-            _masks[0] = 0x01FFL;
-            _masks[1] = 0x0003FE00L;
-            _masks[2] = 0x07FC0000L;
-            _masks[3] = 0x000FF8000000L;
+            InitializeRowsMasks();
+            InitializeColumnsMasks();
+            InitializeDiagonalsMasks();
+            InitializeSubgridsMasks();
+            _masks[0] = _rowsMasks;
+            _masks[1] = _columnsMasks;
+            _masks[2] = _diagonalsMasks;
         }
         
-        // Initialize the bits map
-        private static void InitializeBitsMap()
+        // Initialize the subgrids masks
+        private static void InitializeSubgridsMasks()
         {
-            _bitMap = new BidirectionalMap<int, (int, int)>();
-            for (int i = 0; i < 9; i++)
-                _bitMap.Add(i, (i / 3, i % 3));
+            _subgridsMasks[0] = 0b111000111000111000000000000000000000;
+            _subgridsMasks[1] = 0b000111000111000111000000000000000000;
+            _subgridsMasks[2] = 0b000000000000000000111000111000111000;
+            _subgridsMasks[3] = 0b000000000000000000000111000111000111;
         }
-        
-        // Initialize the players
-        public void InitializePlayers()
+
+        // Initialize the row masks
+        private static void InitializeRowsMasks()
         {
-            _whitePlayer = new Player(0L, this);
-            _blackPlayer = new Computer(0L, this);
+            _rowsMasks[0] = 0b111110000000000000000000000000000000;
+            _rowsMasks[1] = 0b011111000000000000000000000000000000;
+            _rowsMasks[2] = 0b000000111110000000000000000000000000;
+            _rowsMasks[3] = 0b000000011111000000000000000000000000;
+            _rowsMasks[4] = 0b000000000000111110000000000000000000;
+            _rowsMasks[5] = 0b000000000000011111000000000000000000;
+            _rowsMasks[6] = 0b000000000000000000111110000000000000;
+            _rowsMasks[7] = 0b000000000000000000011111000000000000;
+            _rowsMasks[8] = 0b000000000000000000000000111110000000;
+            _rowsMasks[9] = 0b000000000000000000000000011111000000;
+            _rowsMasks[10] = 0b000000000000000000000000000000111110;
+            _rowsMasks[11] = 0b000000000000000000000000000000011111;
         }
         
-        // Rotate a subgrid clockwise
-        public void RotateSubgridClockwise(int index)
-        {   
-            long oldStateB = _masks[index] & _blackPlayer.Status;
-            long oldStateW = _masks[index] & _whitePlayer.Status;
-            oldStateB >>= (index * 9);
-            oldStateW >>= (index * 9);
-            long newStateB = 0, newStateW = 0;
-            for (int i = 0; i < 9; i++) 
-            {
-                long bitMaskB = oldStateB & (1L << i);
-                long bitMaskW = oldStateW & (1L << i);
-                int x = (i + 2 * (i + 1) - i / 3) % 9;
-                newStateB |= bitMaskB >> i << x;
-                newStateW |= bitMaskW >> i << x;
-            }
-            newStateB <<= index * 9;
-            newStateW <<= index * 9;
-            _blackPlayer.Status &= ~_masks[index];
-            _blackPlayer.Status |= newStateB;
-            _whitePlayer.Status = newStateW | (_whitePlayer.Status & ~_masks[index]);
-        }
-        
-        // Rotate a subgrid counter-clockwise
-        public void RotateSubgridCounterClockwise(int index)
+        // Initialize the column masks
+        private static void InitializeColumnsMasks()
         {
-            long oldStateB = _masks[index] & _blackPlayer.Status;
-            long oldStateW = _masks[index] & _whitePlayer.Status;
-            oldStateB >>= (index * 9);
-            oldStateW >>= (index * 9);
-            long newStateB = 0, newStateW = 0;
-            for (int i = 0; i < 9; i++) {
-                long bitMaskB = (oldStateB >> i) & 1;
-                long bitMaskW = (oldStateW >> i) & 1;
-                int x = ((i * 2) + 1 + (i / 3)) % 9;
-                newStateB |= bitMaskB << x;
-                newStateW |= bitMaskW << x;
-            }
-            newStateB <<= index * 9;
-            newStateW <<= index * 9;
-            _blackPlayer.Status &= ~_masks[index];
-            _blackPlayer.Status |= newStateB;
-            _whitePlayer.Status = (_whitePlayer.Status & ~_masks[index]) | newStateW;
+            _columnsMasks[0] = 0b100000100000100000100000100000000000;
+            _columnsMasks[1] = 0b000000100000100000100000100000100000;
+            _columnsMasks[2] = 0b010000010000010000010000010000000000;
+            _columnsMasks[3] = 0b000000010000010000010000010000010000;
+            _columnsMasks[4] = 0b001000001000001000001000001000000000;
+            _columnsMasks[5] = 0b000000001000001000001000001000001000;
+            _columnsMasks[6] = 0b000100000100000100000100000100000000;
+            _columnsMasks[7] = 0b000000000100000100000100000100000100;
+            _columnsMasks[8] = 0b000010000010000010000010000010000000;
+            _columnsMasks[9] = 0b000000000010000010000010000010000010;
+            _columnsMasks[10] = 0b000001000001000001000001000001000000;
+            _columnsMasks[11] = 0b000000000001000001000001000001000001;
         }
         
-        // Getters and setter for the players
-        public static Player WhitePlayer
+        // Initialize the diagonal masks
+        private static void InitializeDiagonalsMasks()
         {
-            get { return _whitePlayer; }
-            set { _whitePlayer = value; }
+            _diagonalsMasks[0] = 0b100000010000001000000100000010000000;
+            _diagonalsMasks[1] = 0b000000010000001000000100000010000001;
+            _diagonalsMasks[2] = 0b010000001000000100000010000001000000;
+            _diagonalsMasks[3] = 0b000000100000010000001000000100000010;
+            _diagonalsMasks[4] = 0b000001000010000100001000010000000000;
+            _diagonalsMasks[5] = 0b000000000010000100001000010000100000;
+            _diagonalsMasks[6] = 0b000010000100001000010000100000000000;
+            _diagonalsMasks[7] = 0b000000000001000010000100001000010000;
         }
         
-        public static Computer BlackPlayer
+        // Check if a player won by iterating over the winning masks, return true if he won and false otherwise
+        public static bool CheckWin(long status)
         {
-            get { return _blackPlayer; }
-            set { _blackPlayer = value; }
+            foreach (long mask in MasksIterator)
+                if ((status & mask) == mask) return true;
+            return false;
+        }
+
+        // Check if the grid is full, return true if it is and false otherwise
+        private bool IsFull()
+        {
+            return _bitBoard == FullStatus;
+        }
+
+        // Check the state of the game: player1 won, player2 won, draw or nothing and return the corresponding GameStatus
+        public GameStatus CheckGameStatus()
+        {
+            bool player1 = CheckWin(_status1);  
+            bool player2 = CheckWin(_status2);
+            
+            // Check if both players won
+            if (player1 && player2) return GameStatus.Draw;
+                
+            // Check if player1 won
+            if (player1) return GameStatus.Player1;
+            
+            // Check if player2 won
+            if (player2) return GameStatus.Player2;
+            
+            // Check if the grid is full
+            if (IsFull()) return GameStatus.Draw;
+            
+            // Nothing happened
+            return GameStatus.Nothing;
+        }
+
+        // Getter and setter for the bitboard
+        public long BitBoard
+        {
+            get { return _bitBoard; }
+            set { _bitBoard = value; }
         }
         
-        // Getter for thr number of options
-        public static int NumberOfOptions
+        // Getter and Setter for the status of player 1
+        public long Status1
         {
-            get { return _options.Count; }
+            get { return _status1; }
+            set { _status1 = value; }
         }
         
-        // Getter and Setter for the options
-        public static List<Option> Options
+        // Getter and Setter for the status of player 2
+        public long Status2
         {
-            get { return _options; }
-            set { _options = value; }
+            get { return _status2; }
+            set { _status2 = value; }
+        }
+        
+        // Getter and Setter for the masks
+        public static long[][] Masks
+        {
+            get { return _masks; }
+            set { _masks = value; }
+        }
+        
+        // Getter and Setter for the subgrids masks
+        public static long[] SubGridsMasks
+        {
+            get { return _subgridsMasks; }
+            set { _subgridsMasks = value; }
         }
     }
 }

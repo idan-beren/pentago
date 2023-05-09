@@ -1,19 +1,97 @@
+using pentago.Utilities;
+
 namespace pentago
 {
     public static class Configurations
     {
+        // The status of the cell (empty, player 1, player 2)
+        public enum CellStatus
+        {
+            Empty,
+            Player1,
+            Player2
+        }
+        
+        // The status of the game (player 1 wins, player 2 wins, draw, nothing)
+        public enum GameStatus
+        {
+            Player1,
+            Player2,
+            Draw,
+            Nothing
+        }
+        
+        // The symmetry of the grid (horizontal, vertical)
+        public enum Symmetry
+        {
+            None,
+            Horizontal,
+            Vertical
+        }
+
         // The number of the subgrids
         public const int NumberOfSubgrids = 4;
         
         // The size of the subgrid
         public const int SubgridSize = 3;
         
-        // The number of the circles
-        public const int NumberOfCircles = 36;
+        // The number of the cells
+        public const int NumberOfCells = 36;
         
-        // THhe number of the arrows
-        public const int NumberOfArrows = 8;
+        // The number of the directions
+        public const int NumberOfDirections = 2;
 
+        // The number of the rotations
+        public const int NumberOfRotations = 8;
+        
+        // The number of the bits that are needed to represent the status of the grid
+        public const int NumberOfBits = 36;
+        
+        // Length of the subgrid
+        public const int SubgridLength = 9;
+
+        // The number of the arrows
+        public const int NumberOfArrows = 8;
+        
+        // Number of row masks
+        public const int NumberOfRowMasks = 12;
+        
+        // Number of column masks
+        public const int NumberOfColumnMasks = 12;
+        
+        // Number of diagonal masks
+        public const int NumberOfDiagonalMasks = 8;
+        
+        // Number of subgrid masks
+        public const int NumberOfSubgridMasks = 4;
+        
+        // Number of symmetries
+        public const int NumberOfSymmetries = 2;
+        
+        // Kind of masks (row, column, diagonal)
+        public const int KindOfMasks = 3;
+        
+        // Bit
+        public const long Bit = 1L;
+        
+        // First bit
+        public const int FirstBit = 35;
+
+        // Empty status
+        public const long EmptyStatus = 0L;
+        
+        // Full status
+        public const long FullStatus = 0b111111111111111111111111111111111111;
+        
+        // Horizontal shift
+        public const int HorizontalShift = 18;
+        
+        // Vertical shift
+        public const int VerticalShift = 3;
+        
+        // None
+        public const int None = -1;
+        
         // The positions of the subgrids
         public static readonly Position[] SubgridsPositions =
         {
@@ -92,20 +170,6 @@ namespace pentago
             new Rotation(true, 3), new Rotation(false, 2), new Rotation(true, 2), new Rotation(false, 0)
         };
 
-        // Circles to Positions
-        public static readonly Position[] CirclesToPositions =
-        {
-            new Position(0, 0), new Position(1, 0), new Position(2, 0), new Position(3, 0), 
-            new Position(4, 0), new Position(5, 0), new Position(0, 1), new Position(1, 1),
-            new Position(2, 1), new Position(3, 1), new Position(4, 1), new Position(5, 1),
-            new Position(0, 2), new Position(1, 2), new Position(2, 2), new Position(3, 2),
-            new Position(4, 2), new Position(5, 2), new Position(0, 3), new Position(1, 3),
-            new Position(2, 3), new Position(3, 3), new Position(4, 3), new Position(5, 3),
-            new Position(0, 4), new Position(1, 4), new Position(2, 4), new Position(3, 4),
-            new Position(4, 4), new Position(5, 4), new Position(0, 5), new Position(1, 5),
-            new Position(2, 5), new Position(3, 5), new Position(4, 5), new Position(5, 5)
-        };
-        
         // Cell indexes 
         public static readonly int[] CellIndexes =
         {
@@ -113,11 +177,31 @@ namespace pentago
             19, 20, 24, 25, 26, 30, 31, 32, 21, 22, 23, 27, 28, 29, 33, 34, 35
         };
         
-        // Rotations to Positions
-        public static readonly Position[] RotationsToPositions =
-        {
-            new Position(0, 0), new Position(1, 0), new Position(1, 0), new Position(1, 1),
-            new Position(1, 1), new Position(0, 1), new Position(0, 1), new Position(0, 0)
-        };
+        // Logo size
+        public static readonly Size LogoSize = new Size(800, 800);
+        
+        // Instructions size
+        public static readonly Size InstructionsSize = new Size(800, 800);
+        
+        // Buttons size
+        public static readonly Size ButtonsSize = new Size(150, 50);
+        
+        // Header size
+        public static readonly Size HeaderSize = new Size(250, 100);
+        
+        // Header position
+        public static readonly Position HeaderPosition = new Position(320, 50);
+        
+        // Restart button position
+        public static readonly Position RestartButtonPosition = new Position(20, 20);
+        
+        // Instructions button position
+        public static readonly Position InstructionsButtonPosition = new Position(500, 600);
+        
+        // Start button position
+        public static readonly Position StartButtonPosition = new Position(150, 600);
+        
+        // Back button position
+        public static readonly Position BackButtonPosition = new Position(600, 700);
     }
 }
