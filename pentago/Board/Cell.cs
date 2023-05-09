@@ -1,4 +1,5 @@
 using static pentago.Configurations;
+
 namespace pentago.Board
 {
     public class Cell
